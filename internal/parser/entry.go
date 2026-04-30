@@ -55,16 +55,18 @@ func ParseLine(line string) (*Entry, error) {
 	return e, nil
 }
 
+// timestampLayouts is the ordered list of formats parseTimestamp tries.
+// Known limitation: layouts without an explicit zone (e.g. plain
+// "2006-01-02T15:04:05") are not in this list, so naive timestamps fall
+// through to "unrecognised" and the row ends up with a zero Time. The
+// trial task #2 is to fix that.
+var timestampLayouts = []string{
+	time.RFC3339Nano,
+	time.RFC3339,
+}
+
 func parseTimestamp(s string) (time.Time, error) {
-	// BUG-FOR-PROMPT: this list only covers RFC3339 with explicit offset.
-	// Timestamps like "2026-01-02T15:04:05" (no zone) or "...Z" written as
-	// "2026-01-02 15:04:05Z" fall through and the entry ends up with a zero
-	// Timestamp, causing --since filtering to drop them silently.
-	layouts := []string{
-		time.RFC3339Nano,
-		time.RFC3339,
-	}
-	for _, l := range layouts {
+	for _, l := range timestampLayouts {
 		if t, err := time.Parse(l, s); err == nil {
 			return t, nil
 		}
