@@ -13,13 +13,16 @@ import (
 	"github.com/alive-worker/logsift/internal/parser"
 )
 
+const Version = "0.2.0"
+
 type Options struct {
-	File   string
-	Level  string
-	Since  string
-	Grep   string
-	Where  multiFlag
-	Output string
+	File        string
+	Level       string
+	Since       string
+	Grep        string
+	Where       multiFlag
+	Output      string
+	ShowVersion bool
 }
 
 type multiFlag []string
@@ -37,6 +40,7 @@ func ParseArgs(args []string, stderr io.Writer) (*Options, error) {
 	fs.StringVar(&opts.Grep, "grep", "", "substring match on message")
 	fs.Var(&opts.Where, "where", "field<op>value expression (repeatable)")
 	fs.StringVar(&opts.Output, "output", "color", "color|json|tsv")
+	fs.BoolVar(&opts.ShowVersion, "version", false, "print version and exit")
 	if err := fs.Parse(args); err != nil {
 		return nil, err
 	}
@@ -44,6 +48,10 @@ func ParseArgs(args []string, stderr io.Writer) (*Options, error) {
 }
 
 func Run(opts *Options, stdin io.Reader, stdout io.Writer, stderr io.Writer, now time.Time) error {
+	if opts.ShowVersion {
+		fmt.Fprintln(stdout, "logsift "+Version)
+		return nil
+	}
 	chain, err := buildChain(opts, now)
 	if err != nil {
 		return err
