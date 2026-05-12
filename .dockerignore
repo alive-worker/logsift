@@ -1,0 +1,11 @@
+# Keep the in-container repo as a clean single-commit initial scene.
+.git
+.gitignore
+.dockerignore
+logsift
+logsift.exe
+*.test
+*.out
+dist/
+.idea
+.vscode

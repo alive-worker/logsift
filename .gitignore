@@ -1,0 +1,7 @@
+/logsift
+/logsift.exe
+*.test
+*.out
+/dist/
+/.idea/
+/.vscode/
