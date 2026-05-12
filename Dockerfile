@@ -1,6 +1,6 @@
 # Single-stage image for the trial-labeling initial scene.
 # Spec §3.2: WORKDIR /app, git-initialised, minimal usable init.
-FROM golang:1.22
+FROM golang:1.24
 
 # Required by spec: container repo path is /app.
 WORKDIR /app

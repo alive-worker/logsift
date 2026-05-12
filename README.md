@@ -36,6 +36,23 @@ cat app.log | ./logsift --level=error,warn --since=10m --grep="timeout"
 - `--output=json`: passthrough of matched JSON lines.
 - `--output=tsv`: tab-separated `ts<TAB>level<TAB>service<TAB>msg`.
 
+### Interactive TUI
+
+`--tui` opens a bubbletea-powered terminal UI over the matched entries:
+
+```bash
+./logsift --file app.log --tui
+# inside the TUI:
+#   ↑/↓ or j/k   navigate
+#   l            cycle level filter (* → error → warn → info → debug)
+#   /            grep mode; type to filter, Enter to apply, Esc to cancel
+#   Esc          clear all in-TUI filters
+#   q            quit
+```
+
+When stdout is not a terminal (piped, redirected, or `docker run` without
+`-t`), `--tui` falls back to plain output and prints a warning to stderr.
+
 ### Tests
 
 ```bash
@@ -99,6 +116,23 @@ cat app.log | ./logsift --level=error,warn --since=10m --grep="timeout"
 - `--output=color`（默认）：彩色的单行摘要。
 - `--output=json`：把匹配到的原始 JSON 行原样输出。
 - `--output=tsv`：制表符分隔 `ts<TAB>level<TAB>service<TAB>msg`。
+
+### 终端可视化界面 (TUI)
+
+加 `--tui` 进入基于 bubbletea 的交互式 TUI：
+
+```bash
+./logsift --file app.log --tui
+# TUI 内快捷键：
+#   ↑/↓ 或 j/k   上下移动
+#   l            循环切换 level 过滤（* → error → warn → info → debug）
+#   /            进入 grep 模式，输入关键词后回车应用，Esc 取消
+#   Esc          清空所有 TUI 内过滤器
+#   q            退出
+```
+
+当 stdout 不是 TTY（管道、重定向、`docker run` 没加 `-t`）时，`--tui` 会
+自动 fallback 到普通输出，并在 stderr 打一行警告。
 
 ### 跑测试
 

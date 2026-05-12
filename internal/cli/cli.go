@@ -8,9 +8,13 @@ import (
 	"os"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mattn/go-isatty"
+
 	"github.com/alive-worker/logsift/internal/filter"
 	"github.com/alive-worker/logsift/internal/output"
 	"github.com/alive-worker/logsift/internal/parser"
+	"github.com/alive-worker/logsift/internal/tui"
 )
 
 const Version = "0.2.0"
@@ -23,6 +27,7 @@ type Options struct {
 	Where       multiFlag
 	Output      string
 	ShowVersion bool
+	TUI         bool
 }
 
 type multiFlag []string
@@ -41,6 +46,7 @@ func ParseArgs(args []string, stderr io.Writer) (*Options, error) {
 	fs.Var(&opts.Where, "where", "field<op>value expression (repeatable)")
 	fs.StringVar(&opts.Output, "output", "color", "color|json|tsv")
 	fs.BoolVar(&opts.ShowVersion, "version", false, "print version and exit")
+	fs.BoolVar(&opts.TUI, "tui", false, "launch interactive TUI over matched entries (requires a TTY)")
 	if err := fs.Parse(args); err != nil {
 		return nil, err
 	}
@@ -73,6 +79,7 @@ func Run(opts *Options, stdin io.Reader, stdout io.Writer, stderr io.Writer, now
 
 	scanner := bufio.NewScanner(src)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+	var kept []*parser.Entry
 	for scanner.Scan() {
 		entry, perr := parser.ParseLine(scanner.Text())
 		if perr != nil {
@@ -85,11 +92,48 @@ func Run(opts *Options, stdin io.Reader, stdout io.Writer, stderr io.Writer, now
 		if !chain.Keep(entry) {
 			continue
 		}
+		if opts.TUI {
+			kept = append(kept, entry)
+			continue
+		}
 		if err := w.Write(entry); err != nil {
 			return err
 		}
 	}
-	return scanner.Err()
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	if opts.TUI {
+		return runTUI(kept, w, stdout, stderr)
+	}
+	return nil
+}
+
+// runTUI launches the bubbletea program when stdout is an interactive
+// terminal. Otherwise it falls back to streaming the previously buffered
+// entries through the standard writer, so `--tui` is a no-op (warning to
+// stderr) in pipes / docker without -t.
+func runTUI(entries []*parser.Entry, w output.Writer, stdout io.Writer, stderr io.Writer) error {
+	if !isInteractive(stdout) {
+		fmt.Fprintln(stderr, "warn: --tui requested but stdout is not a TTY; falling back to normal output")
+		for _, e := range entries {
+			if err := w.Write(e); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	p := tea.NewProgram(tui.New(entries), tea.WithAltScreen())
+	_, err := p.Run()
+	return err
+}
+
+func isInteractive(w io.Writer) bool {
+	f, ok := w.(*os.File)
+	if !ok {
+		return false
+	}
+	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
 }
 
 func buildChain(opts *Options, now time.Time) (filter.Chain, error) {
