@@ -21,6 +21,27 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Gofmt
+        # Surface formatting drift early; gofmt -l prints non-canonical
+        # files. Fail the job if anything is listed.
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt would rewrite the following files:"
+            echo "$unformatted"
+            gofmt -d $unformatted
+            exit 1
+          fi
+
+      - name: Go mod tidy
+        # Catch stale go.sum / unused deps before they hit main.
+        run: |
+          go mod tidy
+          if ! git diff --exit-code go.mod go.sum; then
+            echo "::error::go.mod / go.sum drifted from `go mod tidy`; commit the diff above"
+            exit 1
+          fi
+
       - name: Test
         # -race omitted: image and tests run with CGO_ENABLED=0 for portable
         # static binaries; reintroduce -race when goroutine code lands
