@@ -84,7 +84,25 @@ internal/parser/             NDJSON line parser + duration parser
 internal/filter/             filter chain + expression evaluator
 internal/output/             color / json / tsv writers
 testdata/                    sample logs used by tests
+docs/                        ROADMAP.md + DEVELOPMENT_PLAN.md (not shipped)
+submissions/logsift/         training-task submission snapshot (archival)
 ```
+
+### Submission package
+
+`submissions/logsift/` is a frozen snapshot used to register this project
+into the training-task grading system. It is **archival** — when the main
+tree moves forward, regenerate it with:
+
+```bash
+make submission
+```
+
+This mirrors the repo-root `Dockerfile` into `submissions/logsift/Dockerfile`
+and rebuilds `submissions/logsift/repo.zip` from `git archive HEAD`. The
+[`.gitattributes`](.gitattributes) `export-ignore` rules keep `submissions/`,
+`docs/`, and editor metadata out of the archive so the zip continues to
+match the "initial scene" the grading container expects.
 
 ---
 
@@ -165,4 +183,21 @@ internal/parser/             NDJSON 行解析 + duration 解析
 internal/filter/             过滤链 + 表达式求值器
 internal/output/             color / json / tsv 三种输出
 testdata/                    测试用样例日志
+docs/                        ROADMAP.md + DEVELOPMENT_PLAN.md（不入包）
+submissions/logsift/         培训作业提交快照（只读归档）
 ```
+
+### 提交包
+
+`submissions/logsift/` 是给培训作业打分系统注册项目用的冻结快照，本质
+**只读归档**。主干往前推进后用：
+
+```bash
+make submission
+```
+
+把仓库根的 `Dockerfile` 镜像到 `submissions/logsift/Dockerfile`，并用
+`git archive HEAD` 重建 `submissions/logsift/repo.zip`。
+[`.gitattributes`](.gitattributes) 的 `export-ignore` 规则负责把
+`submissions/`、`docs/`、编辑器元数据排除在 zip 之外，保证产物始终对齐
+打分容器所期望的"初始现场"。

@@ -1,0 +1,14 @@
+# Normalize text files to LF on checkout regardless of core.autocrlf, so
+# Go-toolchain output (go.sum, gofmt) stays byte-stable across Windows /
+# macOS / Linux contributors and `go mod tidy` doesn't churn.
+* text=auto eol=lf
+*.zip binary
+
+# Paths excluded from `git archive` (= `make submission`'s repo.zip).
+# Goal: the regenerated repo.zip mirrors the original "initial scene"
+# snapshot — source code only, no submission / docs / editor metadata.
+submissions/ export-ignore
+docs/        export-ignore
+.vscode/     export-ignore
+.claude/     export-ignore
+.gitattributes export-ignore

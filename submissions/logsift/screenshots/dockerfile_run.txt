@@ -1,0 +1,28 @@
+[1] image built: yes (you just saw build succeed)
+[2] container starts: yes
+[3] WORKDIR = /app
+[4] /app contents (no host residue):
+.git
+.github
+Dockerfile
+Makefile
+README.md
+cmd
+go.mod
+go.sum
+internal
+testdata
+[5] repo is git: true
+    git log (initial scene only):
+2bc01d2 initial scene
+[6] working tree status (must be clean):
+    -> clean
+[7] no manual init needed - go test + build right now:
+?   	github.com/alive-worker/logsift/cmd/logsift	[no test files]
+ok  	github.com/alive-worker/logsift/internal/cli	0.004s
+ok  	github.com/alive-worker/logsift/internal/filter	0.004s
+?   	github.com/alive-worker/logsift/internal/output	[no test files]
+ok  	github.com/alive-worker/logsift/internal/parser	0.003s
+ok  	github.com/alive-worker/logsift/internal/tui	0.004s
+build OK: 4.7M
+logsift 0.2.0

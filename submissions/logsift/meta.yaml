@@ -1,0 +1,17 @@
+# Parent record fields (see spec §2 "字段描述").
+repo_url: https://github.com/alive-worker/logsift
+repo_type: 公有仓库
+language: Go + bubbletea + lipgloss
+dockerfile: ./Dockerfile          # copy of the repo-root Dockerfile
+repo: ./repo.zip                  # zipped initial scene
+environment_notes: |
+  Single-binary Go CLI; no external services. Build inside the container
+  with `go build ./...` and exercise the tool via stdin or `--file`. The
+  container ships with go 1.24, git, curl, tmux. When entering the
+  container, invoke `bash -c` (not `bash -lc`) so /etc/profile does not
+  strip /usr/local/go/bin from PATH.
+
+  A bubbletea-based TUI is available via `--tui`; it auto-falls-back to
+  plain text when stdout is not a TTY (e.g. inside `docker run` without
+  `-t`), so the seven-item self-check still passes in headless mode.
+task_count: 16
