@@ -1,0 +1,240 @@
+# PPE (Prompt Processing Environment) Configuration for logsift
+# This configuration defines the development environment for Trae
+
+# Environment metadata
+metadata:
+  project_name: "logsift"
+  description: "A Go-based log filtering tool for NDJSON logs"
+  language: "Go 1.24"
+  framework: "bubbletea + lipgloss for TUI"
+  created_at: "2026-05-18"
+  version: "1.0.0"
+
+# Development environment configuration
+environment:
+  # Base image and container configuration
+  docker:
+    base_image: "golang:1.24-bookworm"
+    working_directory: "/app"
+    ssh_enabled: true
+    ssh_port: 2222
+    ssh_password: "password"
+    
+  # Go-specific configuration
+  go:
+    version: "1.24.0"
+    goproxy: "https://goproxy.cn,direct"
+    cgo_enabled: false
+    module_mode: true
+    
+  # System dependencies
+  system_dependencies:
+    - "git"
+    - "curl"
+    - "tmux"
+    - "ca-certificates"
+    - "openssh-server"
+    
+  # Development tools
+  tools:
+    - "go"
+    - "git"
+    - "make"
+    - "gofmt"
+    - "go vet"
+
+# Build and development commands
+commands:
+  # Build commands
+  build:
+    description: "Build the logsift binary"
+    command: "go build -o logsift ./cmd/logsift"
+    working_directory: "/app"
+    
+  # Test commands
+  test:
+    description: "Run all tests"
+    command: "go test ./..."
+    working_directory: "/app"
+    
+  test_verbose:
+    description: "Run tests with verbose output"
+    command: "go test -v ./..."
+    working_directory: "/app"
+    
+  # Code quality commands
+  vet:
+    description: "Run go vet for static analysis"
+    command: "go vet ./..."
+    working_directory: "/app"
+    
+  fmt:
+    description: "Format Go code"
+    command: "gofmt -w ."
+    working_directory: "/app"
+    
+  # Run commands
+  run_sample:
+    description: "Run logsift with sample data"
+    command: "./logsift --file testdata/sample.ndjson --output tsv"
+    working_directory: "/app"
+    depends_on: "build"
+    
+  run_tui:
+    description: "Run logsift with TUI interface"
+    command: "./logsift --file testdata/sample.ndjson --tui"
+    working_directory: "/app"
+    depends_on: "build"
+    
+  # Docker commands
+  docker_build:
+    description: "Build Docker image"
+    command: "docker build -t logsift ."
+    working_directory: "/app"
+    
+  docker_trae_build:
+    description: "Build Trae SSH Docker image"
+    command: "docker build -f environment/Dockerfile -t logsift-trae ."
+    working_directory: "/app"
+    
+  docker_trae_run:
+    description: "Run Trae SSH container"
+    command: "docker run -d --name logsift-trae -p 2222:22 -e SSH_PASSWORD=password logsift-trae"
+    working_directory: "/app"
+    
+  # Make commands
+  make_build:
+    description: "Build using Makefile"
+    command: "make build"
+    working_directory: "/app"
+    
+  make_test:
+    description: "Test using Makefile"
+    command: "make test"
+    working_directory: "/app"
+    
+  make_submission:
+    description: "Generate submission package"
+    command: "make submission"
+    working_directory: "/app"
+
+# Project structure
+project_structure:
+  source_directories:
+    - "cmd/logsift/"
+    - "internal/cli/"
+    - "internal/parser/"
+    - "internal/filter/"
+    - "internal/output/"
+    - "internal/tui/"
+    
+  test_directories:
+    - "internal/cli/"
+    - "internal/parser/"
+    - "internal/filter/"
+    - "internal/tui/"
+    
+  data_directories:
+    - "testdata/"
+    
+  documentation:
+    - "README.md"
+    - "docs/"
+    - ".trae/ppe_config.yaml"
+    
+  configuration_files:
+    - "go.mod"
+    - "go.sum"
+    - "Makefile"
+    - "Dockerfile"
+    - "environment/Dockerfile"
+
+# Development workflow
+workflow:
+  setup:
+    - "Check if Go is installed"
+    - "Install dependencies: go mod download"
+    - "Build the project: make build"
+    
+  development:
+    - "Make changes to source code"
+    - "Run tests: make test"
+    - "Format code: make fmt"
+    - "Static analysis: make vet"
+    
+  testing:
+    - "Unit tests: go test ./..."
+    - "Integration test: ./logsift --file testdata/sample.ndjson"
+    - "TUI test: ./logsift --file testdata/sample.ndjson --tui"
+    
+  build_and_deploy:
+    - "Build binary: make build"
+    - "Build Docker image: make docker"
+    - "Test in container: docker run --rm -it logsift bash -c 'cd /app && go test ./...'"
+
+# Environment variables
+environment_variables:
+  required:
+    GOPROXY: "https://goproxy.cn,direct"
+    CGO_ENABLED: "0"
+    PATH: "/usr/local/go/bin:/go/bin:$PATH"
+    
+  optional:
+    HTTP_PROXY: ""
+    HTTPS_PROXY: ""
+    SSH_PORT: "22"
+    SSH_PASSWORD: "password"
+
+# SSH configuration for Trae
+ssh_config:
+  host: "logsift-trae"
+  hostname: "localhost"
+  port: 2222
+  user: "root"
+  password: "password"
+  strict_host_key_checking: "no"
+  user_known_hosts_file: "/dev/null"
+  
+  # Connection test command
+  test_command: "echo 'SSH connection successful' && go version"
+
+# Code quality standards
+code_quality:
+  go_fmt: true
+  go_vet: true
+  test_coverage: ">=80%"
+  linting: true
+  
+  # Pre-commit checks
+  pre_commit:
+    - "go fmt ./..."
+    - "go vet ./..."
+    - "go test ./..."
+
+# Troubleshooting
+troubleshooting:
+  common_issues:
+    - issue: "Go command not found"
+      solution: "Use bash -c instead of bash -lc to avoid PATH stripping"
+      
+    - issue: "Network connectivity problems"
+      solution: "Set HTTP_PROXY and HTTPS_PROXY environment variables"
+      
+    - issue: "SSH connection failed"
+      solution: "Check if container is running: docker ps | grep logsift-trae"
+      
+    - issue: "Docker build fails"
+      solution: "Check network proxy settings and try with --build-arg http_proxy=..."
+
+# Documentation references
+references:
+  project_docs:
+    - "README.md - Main project documentation"
+    - "docs/TRAE_DOCKER.md - Trae Docker setup guide"
+    - "docs/DEVELOPMENT_PLAN.md - Development plan"
+    - "docs/ROADMAP.md - Project roadmap"
+    
+  external_links:
+    - "Go Documentation: https://go.dev/doc/"
+    - "bubbletea: https://github.com/charmbracelet/bubbletea"
+    - "lipgloss: https://github.com/charmbracelet/lipgloss"

@@ -1,0 +1,48 @@
+{
+  "ai_assistant": {
+    "request": {
+      "env": "ppe",
+      "ppe": "ppe_data_label_trae"
+    }
+  },
+  
+  "ppe_data_label_trae": {
+    "name": "logsift数据标注环境",
+    "version": "1.0.0",
+    "description": "用于logsift项目的数据标注、模型训练和评估环境",
+    
+    "environment": {
+      "docker": {
+        "file": "environment/Dockerfile",
+        "image": "logsift-trae",
+        "build_command": "docker build -f environment/Dockerfile -t logsift-trae .",
+        "run_command": "docker run -d --name logsift-trae -p 2222:22 -e SSH_PASSWORD=password logsift-trae"
+      },
+      "ssh": {
+        "host": "logsift-trae",
+        "port": 2222,
+        "user": "root",
+        "password": "password"
+      }
+    },
+    
+    "models": {
+      "rollout_sequence": {
+        "1": "GPT5.4",
+        "2": "Gemini 3.1 pro",
+        "3": "DeepSeek-v4",
+        "4": "Doubao-Seed-2.0-Code",
+        "5": {
+          "rotation": ["MinMax-M2.7", "GLM-5.1", "Qwen3.6-Plus"],
+          "description": "按顺序轮流选择"
+        }
+      }
+    },
+    
+    "development": {
+      "language": "Go",
+      "version": "1.24.0",
+      "tools": ["git", "curl", "tmux", "make", "gofmt", "go vet"]
+    }
+  }
+}

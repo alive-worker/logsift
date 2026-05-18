@@ -1,0 +1,92 @@
+{
+  "ai_assistant": {
+    "request": {
+      "env": "ppe",
+      "ppe": "ppe_data_label_trae"
+    }
+  },
+  
+  "ppe_configurations": {
+    "ppe_data_label_trae": {
+      "name": "数据标注Trae环境",
+      "version": "1.0.0",
+      "description": "用于数据标注、模型训练和评估的PPE环境",
+      
+      "environment": {
+        "docker": {
+          "file": "environment/Dockerfile",
+          "image": "logsift-trae",
+          "build_command": "docker build -f environment/Dockerfile -t logsift-trae .",
+          "run_command": "docker run -d --name logsift-trae -p 2222:22 -e SSH_PASSWORD=password logsift-trae"
+        },
+        "ssh": {
+          "host": "logsift-trae",
+          "port": 2222,
+          "user": "root",
+          "password": "password"
+        }
+      },
+      
+      "models": {
+        "rollout_sequence": {
+          "1": "GPT5.4",
+          "2": "Gemini 3.1 pro", 
+          "3": "DeepSeek-v4",
+          "4": "Doubao-Seed-2.0-Code",
+          "5": {
+            "rotation": ["MinMax-M2.7", "GLM-5.1", "Qwen3.6-Plus"],
+            "description": "按顺序轮流选择"
+          }
+        }
+      },
+      
+      "workflows": {
+        "data_labeling": {
+          "steps": [
+            "环境准备：构建并启动Docker容器",
+            "SSH连接：通过Trae连接到容器",
+            "数据准备：收集和预处理数据",
+            "标注执行：使用标注工具进行标注",
+            "质量检查：验证标注质量",
+            "模型训练：使用标注数据训练模型",
+            "评估验证：评估模型性能",
+            "结果记录：记录session信息和评分"
+          ]
+        },
+        
+        "prompt_rollout": {
+          "requirements": [
+            "每个prompt进行5次独立rollout",
+            "前4次按固定顺序使用指定模型",
+            "第5次按轮换顺序选择模型",
+            "每次rollout从相同初始现场开始",
+            "记录session_id、model_name、score、score_reason",
+            "生成并上传git diff产物文件"
+          ]
+        }
+      },
+      
+      "commands": {
+        "setup": [
+          "docker build -f environment/Dockerfile -t logsift-trae .",
+          "docker run -d --name logsift-trae -p 2222:22 -e SSH_PASSWORD=password logsift-trae"
+        ],
+        "connect": "ssh -p 2222 root@localhost",
+        "build": "go build -o logsift ./cmd/logsift",
+        "test": "go test ./...",
+        "run_sample": "./logsift --file testdata/sample.ndjson --output tsv"
+      },
+      
+      "documentation": {
+        "appendix_e": "附录E：Trea 中进入 PPE 方式",
+        "steps": [
+          "1. 打开用户json设置（F1键或点击搜索，输出>json）",
+          "2. 添加ppe配置：在settings.json中添加配置行",
+          "3. reload window",
+          "4. 选择内置模型（会变化）",
+          "5. 再次进入模型选择界面即可看见待测模型"
+        ]
+      }
+    }
+  }
+}

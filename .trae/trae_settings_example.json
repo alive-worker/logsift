@@ -1,0 +1,15 @@
+{
+  "ai_assistant.request.env": "ppe",
+  "ai_assistant.request.ppe": "ppe_data_label_trae",
+  
+  "ppe_data_label_trae.environment.docker.file": "environment/Dockerfile",
+  "ppe_data_label_trae.environment.docker.image": "logsift-trae",
+  "ppe_data_label_trae.environment.ssh.host": "logsift-trae",
+  "ppe_data_level_trae.environment.ssh.port": 2222,
+  
+  "ppe_data_label_trae.models.rollout_sequence.1": "GPT5.4",
+  "ppe_data_label_trae.models.rollout_sequence.2": "Gemini 3.1 pro",
+  "ppe_data_label_trae.models.rollout_sequence.3": "DeepSeek-v4",
+  "ppe_data_label_trae.models.rollout_sequence.4": "Doubao-Seed-2.0-Code",
+  "ppe_data_label_trae.models.rollout_sequence.5.rotation": ["MinMax-M2.7", "GLM-5.1", "Qwen3.6-Plus"]
+}
